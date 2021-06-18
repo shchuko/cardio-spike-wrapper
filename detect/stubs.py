@@ -26,7 +26,7 @@ class ResultStub(BaseResult):
 
 class AnalyzerStub(BaseAnalyzer):
     def __init__(self):
-        self.result_id = str(uuidlib.uuid4())
+        self.result_id = '02e16f15-3f19-4f74-af77-e5ab043db88d'
         csv_path = AnalyzerStub.__gen_csv__()
         stats = [AnalyzerStub.__gen_stats__(0.4),
                  AnalyzerStub.__gen_stats__(0.4),
