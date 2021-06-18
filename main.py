@@ -2,12 +2,22 @@ import io
 
 from fastapi import FastAPI, File, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
+from starlette.middleware.cors import CORSMiddleware
 
 from detect.analyzers import BaseAnalyzer
 from detect.stubs import AnalyzerStub
 
 app = FastAPI()
 analyzer = AnalyzerStub()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 
 @app.post("/analyze")
