@@ -1,5 +1,4 @@
 import io
-from tempfile import NamedTemporaryFile
 
 from fastapi import FastAPI, File, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
@@ -8,7 +7,6 @@ from detect.analyzers import BaseAnalyzer
 from detect.stubs import AnalyzerStub
 
 app = FastAPI()
-response_file = NamedTemporaryFile("w+b")
 analyzer = AnalyzerStub()
 
 
