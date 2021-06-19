@@ -16,7 +16,7 @@
             <label for="fileinput" class="upload__label">
                 <span class="upload__text">Выберите файл</span>
             </label>
-            <button class="upload__button" id="uploadbtn" disabled="disabled">Анализировать данные</button>
+            <button class="upload__button" id="uploadbtn">Анализировать данные</button>
         </form>
     </section>
     <section class="analyze__wrapper">
@@ -31,28 +31,95 @@
 
         <div class="statistic" id="statslist"></div>
 
-        <div class="picture" id="picture"></div>
+        <div class="picture" id="pictureWrapper"></div>
     </section>
 </main>
-
-
 <script>
+    function setupMouseContainer(container) {
+        container.style.setProperty('position', 'relative')
+
+    }
+
+    function resetMouseContainer(container) {
+        container.innerHTML = ''
+        setupMouseContainer(container)
+    }
+
+    function setupMouseWrappedElement(element) {
+        element.style.setProperty('position', 'absolute')
+    }
+
+
+    function createMouseContainerChild(width,
+                                       height,
+                                       frs,
+                                       callbacks_over,
+                                       callbacks_leave,
+                                       display_flags) {
+
+        const wrapper = document.createElement('div')
+        wrapper.id = '8cde1978-d11c-11eb-b8bc-0242ac130003'
+        wrapper.style.setProperty('width', width + 'px')
+        wrapper.style.setProperty('height', height + 'px')
+        wrapper.style.setProperty('z-index', '100')
+        wrapper.style.setProperty('display', 'grid')
+        wrapper.style.setProperty('position', 'absolute')
+
+        let fr_list = ''
+
+        for (let i = 0; i < frs.length; ++i) {
+            fr_list += frs[i] + 'fr '
+            let cell = document.createElement("div");
+            if (display_flags[i] === true) {
+                cell.style.setProperty('opacity', '0.0')
+                cell.style.setProperty('background', 'blue')
+            }
+
+            cell.addEventListener('mouseover', () => {
+                cell.style.setProperty('opacity', '0.2')
+                callbacks_over[i](cell)
+            })
+
+            cell.addEventListener('mouseleave', () => {
+                cell.style.setProperty('opacity', '0.0')
+                callbacks_leave[i](cell)
+            })
+            wrapper.appendChild(cell)
+        }
+
+        wrapper.style.gridTemplateColumns = fr_list
+        return wrapper
+    }
+
     function changeInput() {
         const input = document.querySelector(".upload__text");
         input.innerHTML = "Файл выбран";
     }
+
     const linkelem = document.getElementById('downloadlink')
     let ws = null
     let status = 'done'
+
     const messages = document.getElementById('messages')
     const statslist = document.getElementById('statslist')
-    const picture = document.getElementById('picture')
+    const picWrapper = document.getElementById('pictureWrapper')
+    let img = null
     const uploadbtn = document.getElementById('uploadbtn')
     const fileinput = document.getElementById('fileinput')
     const funcs = [process_status, process_png, process_stats, process_csv]
     let func_no = 0
 
-    uploadbtn.disabled = ""
+    uploadbtn.onclick = async () => {
+        messages.innerHTML = ''
+        statslist.innerHTML = ''
+        resetMouseContainer(picWrapper)
+        func_no = 0
+
+        connectWs(fileinput.files[0])
+        uploadbtn.disabled = "disabled"
+    }
+
+    setupMouseContainer(picWrapper)
 
     function connectWs(fileBlob) {
         viewMsg('connecting...')
@@ -99,17 +166,6 @@
         messages.appendChild(message)
     }
 
-    uploadbtn.onclick = async () => {
-        messages.innerHTML = ''
-        downloadlink.innerHTML = ''
-        statslist.innerHTML = ''
-        picture.innerHTML = ''
-        uploadbtn.disabled = "disabled"
-        func_no = 0
-
-        connectWs(fileinput.files[0])
-    }
-
     async function process_status(data) {
         const json = JSON.parse(data)
         viewMsg('processing done, status: ' + json.status)
@@ -127,11 +183,19 @@
     async function process_png(data) {
         const blob = new Blob([data], {type: "image/png"});
         const url = URL.createObjectURL(blob);
-        const img = new Image(1200);
-        img.src = url;
-        //picture.appendChild(img);
-        picture.style.backgroundImage = `url(${img.src})`
+        img = new Image(1200);
 
+        img.src = url;
+        console.log('before')
+        img.onload = await function () {
+            picHeight = this.height
+            picWidth = this.width
+            console.log('got' + this.height)
+        }
+        setupMouseWrappedElement(img)
+        picWrapper.appendChild(img)
+
+        console.log('after')
         func_no++
     }
 
@@ -144,18 +208,42 @@
         statistic.appendChild(content);
         const json = JSON.parse(data);
         const arr = Object.values(json)[0];
+        let frs = []
+        let callbacks_over = []
+        let callbacks_leave = []
+        let display_flags = []
+
         for (let obj in arr) {
             const ul = document.createElement("ul");
             content.appendChild(ul);
             for (let key in arr[obj]) {
                 if (key === "part_size_factor") {
+                    frs.push(arr[obj][key])
                     continue;
                 }
                 const li = document.createElement("li");
                 ul.appendChild(li);
                 li.innerText = `${key}: ${arr[obj][key]}`;
             }
+
+
+            callbacks_over.push(() => {
+            })
+            callbacks_leave.push(() => {
+            })
+            display_flags.push(true)
         }
+
+        setTimeout(function () {
+            picWrapper.appendChild(createMouseContainerChild(
+                img.width,
+                img.height,
+                frs,
+                callbacks_over,
+                callbacks_leave,
+                display_flags))
+        }, 0);
+
         func_no++
     }
 
@@ -178,7 +266,6 @@
         status = 'done'
         ws.close()
     }
-
 </script>
 </body>
 </html>
