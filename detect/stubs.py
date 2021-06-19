@@ -1,81 +1,67 @@
-from detect.result import BaseResult, StatsWrapper
-from detect.analyzers import BaseAnalyzer
-import uuid as uuidlib
-import tempfile
 import base64
+
+from detect.analyzers import BaseAnalyzer
+from detect.result import BaseResult, Stats, StatsList
 
 
 class ResultStub(BaseResult):
     def __init__(self,
-                 csv_path: str,
+                 csv_content: str,
                  stats: list,
                  png_path: bytes):
-        self.csv_path = csv_path
+        self.csv_content = csv_content
         self.stats = stats
         self.png_path = png_path
 
-    def get_csv_path(self) -> str:
-        return self.csv_path
+    def get_csv_content(self) -> str:
+        return self.csv_content
 
     def get_stats(self) -> list:
         return self.stats
 
-    def get_png(self) -> bytes:
+    def get_png_content(self) -> bytes:
         return self.png_path
 
 
 class AnalyzerStub(BaseAnalyzer):
     def __init__(self):
-        self.result_id = '02e16f15-3f19-4f74-af77-e5ab043db88d'
-        csv_path = AnalyzerStub.__gen_csv__()
-        stats = [AnalyzerStub.__gen_stats__(0.4),
-                 AnalyzerStub.__gen_stats__(0.4),
-                 AnalyzerStub.__gen_stats__(0.2)]
-        png_path = AnalyzerStub.__gen_png__()
-        self.result_stub = ResultStub(csv_path=csv_path, stats=stats, png_path=png_path)
+        self.result_stub = ResultStub(csv_content=AnalyzerStub.__gen_csv__(),
+                                      stats=AnalyzerStub.__get_stats_list__(),
+                                      png_path=AnalyzerStub.__gen_png__())
 
-    def is_ready(self, result_id: str) -> BaseAnalyzer.AnalyzeStatus:
-        if result_id == self.result_id:
-            return BaseAnalyzer.AnalyzeStatus.READY
-
-        return BaseAnalyzer.AnalyzeStatus.NOT_FOUND
-
-    def queue_analyze(self, csv: str) -> str:
-        print(csv)
-        return self.result_id
-
-    def get_result(self, result_id: str) -> BaseResult:
+    async def analyze(self, csv_content: str) -> BaseResult:
         return self.result_stub
 
     @staticmethod
     def __gen_csv__():
-        file = tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".csv")
-        name = file.name
-        file.write("""1,1,1
+        return """1,1,1
 2,2,2
 3,3,3
 4,4,4
-5,5,5""")
+5,5,5"""
 
-        file.close()
-        return name
+    @staticmethod
+    def __get_stats_list__():
+        return StatsList.from_python_list([AnalyzerStub.__gen_stats__(0.4),
+                                           AnalyzerStub.__gen_stats__(0.4),
+                                           AnalyzerStub.__gen_stats__(0.2)])
 
     @staticmethod
     def __gen_stats__(part: float):
-        stats = StatsWrapper(time=100001,
-                             part=part,
-                             tension_index=1.00001,
-                             mode=1.00001,
-                             std=1.00001,
-                             mean=1.00001,
-                             var=1.00001,
-                             pNN_50=1.00001,
-                             RMSSD=1.00001,
-                             ivr=1.00001,
-                             vpr=1.00001,
-                             papr=1.00001,
-                             idm=1.00001,
-                             cat=1.00001)
+        stats = Stats(time=100001,
+                      part=part,
+                      tension_index=1.00001,
+                      mode=1.00001,
+                      std=1.00001,
+                      mean=1.00001,
+                      var=1.00001,
+                      pNN_50=1.00001,
+                      RMSSD=1.00001,
+                      ivr=1.00001,
+                      vpr=1.00001,
+                      papr=1.00001,
+                      idm=1.00001,
+                      cat=1.00001)
         return stats
 
     @staticmethod

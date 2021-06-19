@@ -8,11 +8,5 @@ class BaseAnalyzer:
         READY = 2
         NOT_FOUND = 3
 
-    def queue_analyze(self, csv: str) -> str:
-        pass
-
-    def is_ready(self, result_id: str) -> AnalyzeStatus:
-        pass
-
-    def get_result(self, result_id: str) -> BaseResult:
+    async def analyze(self, csv_content: str) -> BaseResult:
         pass
