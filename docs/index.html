@@ -10,18 +10,15 @@
 <main>
     <h1 class="page-title">Health Analyzer</h1>
     <section class="upload__wrapper">
-        <h2>Загрузка CSV файла</h2>
         <form class="upload__form" id="formElem" onsubmit="return false">
             <input class="upload__input" id="fileinput" type="file" name="fileupload" onchange="changeInput()"/>
             <label for="fileinput" class="upload__label">
-                <span class="upload__text">Выберите файл</span>
+                <span class="upload__text">Choose a file</span>
             </label>
-            <button class="upload__button" id="uploadbtn">Анализировать данные</button>
         </form>
+        <button class="upload__button" id="uploadbtn">Process data</button>
     </section>
     <section class="analyze__wrapper">
-        <h2 class="analyze__title">Анализ данных из CSV</h2>
-
         <div class="analyze-messages">
             <ul class="analyze-messages__list" id="messages">
             </ul>
@@ -93,7 +90,7 @@
 
     function changeInput() {
         const input = document.querySelector(".upload__text");
-        input.innerHTML = "Файл выбран";
+        input.innerHTML = "File chosen";
     }
 
     const linkelem = document.getElementById('downloadlink')
@@ -202,7 +199,7 @@
     async function process_stats(data) {
         const title = document.createElement("h2");
         const content = document.createElement("div");
-        title.innerText = "Статистика";
+        title.innerText = "Statistics";
         const statistic = document.querySelector(".statistic");
         statistic.appendChild(title);
         statistic.appendChild(content);
@@ -252,7 +249,7 @@
         downloadTitle.classList.add("download__title");
         const downloadSection = document.querySelector(".download");
         downloadSection.appendChild(downloadTitle);
-        downloadTitle.innerText = "Скачайте файл с результатом";
+        downloadTitle.innerText = "Download the results";
         const blob = new Blob([data], {type: 'text/plain'});
         const link = document.createElement('a');
         link.classList.add("download__link");
