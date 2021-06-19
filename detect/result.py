@@ -2,8 +2,8 @@ from pydantic import BaseModel
 
 
 class Stats(BaseModel):
-    time: int
-    part: float
+    timestamp: int
+    part_size_factor: float
     tension_index: float
     mode: float
     std: float

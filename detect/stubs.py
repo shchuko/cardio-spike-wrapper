@@ -50,8 +50,8 @@ class AnalyzerStub(BaseAnalyzer):
 
     @staticmethod
     def __gen_stats__(part: float):
-        stats = Stats(time=100001,
-                      part=part,
+        stats = Stats(timestamp=100001,
+                      part_size_factor=part,
                       tension_index=1.00001,
                       mode=1.00001,
                       std=1.00001,
