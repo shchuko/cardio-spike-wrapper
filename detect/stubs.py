@@ -1,3 +1,4 @@
+import asyncio
 import base64
 
 from detect.analyzers import BaseAnalyzer
@@ -30,6 +31,7 @@ class AnalyzerStub(BaseAnalyzer):
                                       png_path=AnalyzerStub.__gen_png__())
 
     async def analyze(self, csv_content: str) -> BaseResult:
+        await asyncio.sleep(2)
         return self.result_stub
 
     @staticmethod

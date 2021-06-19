@@ -55,6 +55,9 @@ async def main():
     <button id="uploadbtn" disabled="disabled">Analyze Data</button>
 </form>
 
+<ul id="messages">
+</ul>
+
 <div id="downloadlink">
 </div>
 
@@ -67,6 +70,7 @@ async def main():
 <script>
     const ws = new WebSocket(`ws://cardio-spike-alvani.herokuapp.com/ws`)
     const linkelem = document.getElementById('downloadlink')
+    const messages = document.getElementById('messages')
     const statslist = document.getElementById('statslist')
     const picture = document.getElementById('picture')
     const uploadbtn = document.getElementById('uploadbtn')
@@ -87,21 +91,34 @@ async def main():
     ws.onmessage = async function (event) {
         await funcs[func_no](event.data)
     }
-
-    uploadbtn.onclick = async () => {
-        ws.send(fileinput.files[0])
+    
+    function viewMsg(msg) {
+        var message = document.createElement('li')
+        var content = document.createTextNode(msg)
+        message.appendChild(content)
+        messages.appendChild(message)
     }
-
-    async function process_status(data) {
+    
+    uploadbtn.onclick = async () => {
+        messages.innerHTML = ''
         downloadlink.innerHTML = ''
         statslist.innerHTML = ''
         picture.innerHTML = ''
+        uploadbtn.disabled = "disabled"
+        
+        ws.send(fileinput.files[0])
+        viewMsg('processing started...')
+    }
 
+    async function process_status(data) {
         const json = JSON.parse(data)
+        viewMsg('processing done, status: ' + json.status)
+        
         if (json.status === 'success') {
             func_no++
         } else {
             func_no = 0
+            uploadbtn.disabled = ""
         }
     }
 
@@ -132,6 +149,7 @@ async def main():
 
         linkelem.appendChild(link)
         func_no = 0
+        uploadbtn.disabled = ""
     }
 
 </script>
