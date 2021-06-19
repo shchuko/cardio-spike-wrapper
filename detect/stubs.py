@@ -44,14 +44,16 @@ class AnalyzerStub(BaseAnalyzer):
 
     @staticmethod
     def __get_stats_list__():
-        return StatsList.from_python_list([AnalyzerStub.__gen_stats__(0.4),
-                                           AnalyzerStub.__gen_stats__(0.4),
-                                           AnalyzerStub.__gen_stats__(0.2)])
+        return StatsList.from_python_list([AnalyzerStub.__gen_stats__(part_size_factor=0.4, human_id=1),
+                                           AnalyzerStub.__gen_stats__(part_size_factor=0.4, human_id=2),
+                                           AnalyzerStub.__gen_stats__(part_size_factor=0.2, human_id=3)])
 
     @staticmethod
-    def __gen_stats__(part: float):
-        stats = Stats(timestamp=100001,
-                      part_size_factor=part,
+    def __gen_stats__(part_size_factor=1.0, human_id=1):
+        stats = Stats(human_id=human_id,
+                      anomaly_freq=1,
+                      anomaly_total_count=1,
+                      part_size_factor=part_size_factor,
                       tension_index=1.00001,
                       mode=1.00001,
                       std=1.00001,
