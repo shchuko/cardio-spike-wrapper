@@ -37,12 +37,9 @@
 
 
 <script>
-    function changeInput() {
-        const input = document.querySelector(".upload__text");
-        input.innerHTML = "Файл выбран";
-    }
-    const ws = new WebSocket(`wss://cardio-spike-alvani.herokuapp.com/ws`)
-    const linkelem = document.getElementById('downloadlink')
+    let ws = null
+    let status = 'done'
+    const downloadlink = document.getElementById('downloadlink')
     const messages = document.getElementById('messages')
     const statslist = document.getElementById('statslist')
     const picture = document.getElementById('picture')
@@ -51,18 +48,43 @@
     const funcs = [process_status, process_png, process_stats, process_csv]
     let func_no = 0
 
-    uploadbtn.disabled = "disabled"
+    uploadbtn.disabled = ""
 
-    ws.onopen = function () {
-        uploadbtn.disabled = ""
-    }
+    function connectWs(fileBlob) {
+        viewMsg('connecting...')
+        status = 'connection'
 
-    ws.onclose = function () {
-        uploadbtn.disabled = "disabled"
-    }
+        ws = new WebSocket(`wss://cardio-spike-alvani.herokuapp.com/ws`)
 
-    ws.onmessage = async function (event) {
-        await funcs[func_no](event.data)
+        ws.onopen = function () {
+            viewMsg('connected...')
+            ws.send(fileBlob)
+            viewMsg('data is sent...')
+            status = 'waiting response'
+        }
+
+        ws.onmessage = async function (event) {
+            await funcs[func_no](event.data)
+        }
+
+        ws.onerror = function () {
+            if (status === 'connection') {
+                viewMsg('connect failed')
+                uploadbtn.disabled = ""
+                func_no = 0
+            } else if (status === 'waiting response') {
+                viewMsg('server disconnected')
+                uploadbtn.disabled = ""
+                func_no = 0
+            }
+        }
+
+        ws.onclose = function () {
+            if (status === 'waiting response') {
+                viewMsg('server disconnected')
+                uploadbtn.disabled = ""
+            }
+        }
     }
 
     function viewMsg(msg) {
@@ -79,9 +101,9 @@
         statslist.innerHTML = ''
         picture.innerHTML = ''
         uploadbtn.disabled = "disabled"
+        func_no = 0
 
-        ws.send(fileinput.files[0])
-        viewMsg('processing started...')
+        connectWs(fileinput.files[0])
     }
 
     async function process_status(data) {
@@ -93,6 +115,8 @@
         } else {
             func_no = 0
             uploadbtn.disabled = ""
+            status = 'done'
+            ws.close()
         }
     }
 
@@ -144,9 +168,12 @@
         link.href = URL.createObjectURL(blob)
         const linkText = document.createTextNode(link.download)
         link.appendChild(linkText)
+
         linkelem.appendChild(link)
         func_no = 0
         uploadbtn.disabled = ""
+        status = 'done'
+        ws.close()
     }
 
 </script>
